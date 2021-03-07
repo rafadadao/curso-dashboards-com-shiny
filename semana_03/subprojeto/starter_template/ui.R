@@ -43,9 +43,9 @@ shinyUI <- dashboardPage(
             # Melhoria de Interface do Usuário
             # Insira a data da última observação válida como cabeçalho (h1)
             # Seu código aqui:
-            
-            
-            
+            h1("Data última observação:"),
+            h1(format(as.Date(unique(max(covid19$date))),"%d/%m/%Y")),
+      
             
             # Fim do exercício 1
             infoBoxOutput("numeroCasosAcumulados"),
@@ -61,6 +61,41 @@ shinyUI <- dashboardPage(
             # 2. O mapa deve conter indicadores sobre COVID usando marcadores e 
             #    polígonos que separam as cidades
             # 3. Seu código abaixo:
+            
+            m <- 
+                leaflet(shapefile) %>% 
+                addProviderTiles(providers$Stamen.TonerLite) %>% 
+                setView(lng = cidade_sp_geo$longitude,
+                        lat = cidade_sp_geo$latitude, 
+                        zoom = 11) %>% 
+                addPolygons(stroke = FALSE,
+                            smoothFactor = .5,
+                            fillOpacity = .4,
+                            fillColor = ~pal(log(new_confirmed + 1e-3)),
+                            label = ~paste0(name, 
+                                            ": ",
+                                            formatC(new_confirmed,
+                                                    big.mark = ","))) %>% 
+                addAwesomeMarkers(~longitude, 
+                                  ~latitude, 
+                                  icon = makeAwesomeIcon(icon = "",
+                                                         text = "", 
+                                                         markerColor = "cadetblue"),
+                                  popup = 
+                                      sprintf("<h3>%s</h3>
+                                   <p>Última atualização: %s</p>
+                                   <p><b>Últimas 24h:</b></h5>
+                                   <p>Casos<b>: %0.f</b></p>
+                                   <p>Mortes<b>: %0.f</b></p>
+                                   ", 
+                                              shapefile@data$nome,
+                                              format.Date(shapefile@data$date, "%d/%m/%Y"),
+                                              shapefile@data$new_confirmed,
+                                              shapefile@data$new_deaths
+                                      ),
+                                  clusterOptions = markerClusterOptions()
+                )
+            
             
             # Fim do exercício 2
         ),
